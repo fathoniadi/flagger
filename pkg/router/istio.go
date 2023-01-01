@@ -446,7 +446,7 @@ func (ir *IstioRouter) SetRoutes(
 			cookieMatch := istiov1alpha3.HTTPMatchRequest{
 				Headers: map[string]istiov1alpha1.StringMatch{
 					cookieHeader: {
-						Exact: canary.Status.SessionAffinityCookie,
+						Regex: fmt.Sprintf(".*%s.*", canary.Status.SessionAffinityCookie),
 					},
 				},
 			}
@@ -468,7 +468,7 @@ func (ir *IstioRouter) SetRoutes(
 				cookieMatch := istiov1alpha3.HTTPMatchRequest{
 					Headers: map[string]istiov1alpha1.StringMatch{
 						cookieHeader: {
-							Exact: previousCookie,
+							Regex: fmt.Sprintf(".*%s.*", previousCookie),
 						},
 					},
 				}
