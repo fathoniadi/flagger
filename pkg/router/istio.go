@@ -454,7 +454,7 @@ func (ir *IstioRouter) SetRoutes(
 						Regex: fmt.Sprintf(".*%s.*", canary.Status.SessionAffinityCookie),
 					},
 					headerCanaryName: {
-						Exact: randomSesId
+						Exact: randomSesId,
 					},
 				},
 			}
