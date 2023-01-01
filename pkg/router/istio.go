@@ -47,6 +47,7 @@ type IstioRouter struct {
 }
 
 const cookieHeader = "Cookie"
+const headerCanaryName = "X-Canary-Id"
 const setCookieHeader = "Set-Cookie"
 const stickyRouteName = "sticky-route"
 const maxAgeAttr = "Max-Age"
@@ -390,6 +391,8 @@ func (ir *IstioRouter) SetRoutes(
 	canaryWeight int,
 	mirrored bool,
 ) error {
+	var randomSesId string
+	
 	apexName, primaryName, canaryName := canary.GetServiceNames()
 
 	vs, err := ir.istioClient.NetworkingV1alpha3().VirtualServices(canary.Namespace).Get(context.TODO(), apexName, metav1.GetOptions{})
@@ -424,7 +427,8 @@ func (ir *IstioRouter) SetRoutes(
 		stickyRoute.Name = stickyRouteName
 		if canaryWeight != 0 {
 			if canary.Status.SessionAffinityCookie == "" {
-				canary.Status.SessionAffinityCookie = fmt.Sprintf("%s=%s", canary.Spec.Analysis.SessionAffinity.CookieName, randSeq())
+				randomSesId = randSeq()
+				canary.Status.SessionAffinityCookie = fmt.Sprintf("%s=%s", canary.Spec.Analysis.SessionAffinity.CookieName, randomSesId )
 			}
 
 			for i, routeDest := range weightedRoute.Route {
@@ -438,6 +442,7 @@ func (ir *IstioRouter) SetRoutes(
 						setCookieHeader: fmt.Sprintf("%s; %s=%d", canary.Status.SessionAffinityCookie, maxAgeAttr,
 							canary.Spec.Analysis.SessionAffinity.GetMaxAge(),
 						),
+						headerCanaryName: randomSesId,
 					}
 				}
 				weightedRoute.Route[i] = routeDest
@@ -447,6 +452,9 @@ func (ir *IstioRouter) SetRoutes(
 				Headers: map[string]istiov1alpha1.StringMatch{
 					cookieHeader: {
 						Regex: fmt.Sprintf(".*%s.*", canary.Status.SessionAffinityCookie),
+					},
+					headerCanaryName: {
+						Exact: randomSesId
 					},
 				},
 			}
@@ -637,7 +645,7 @@ func makeDestination(canary *flaggerv1.Canary, host string, weight int) istiov1a
 func randSeq() string {
 	rand.Seed(time.Now().UnixNano())
 
-	b := make([]rune, 10)
+	b := make([]rune, 15)
 	for i := range b {
 		b[i] = letters[rand.Intn(len(letters))]
 	}
