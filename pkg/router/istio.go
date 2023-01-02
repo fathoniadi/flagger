@@ -47,7 +47,7 @@ type IstioRouter struct {
 }
 
 const cookieHeader = "Cookie"
-const headerCanaryName = "X-Canary-Id"
+const headerCanaryName = "XCanaryId"
 const setCookieHeader = "Set-Cookie"
 const stickyRouteName = "sticky-route"
 const maxAgeAttr = "Max-Age"
