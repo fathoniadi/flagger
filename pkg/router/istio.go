@@ -444,6 +444,7 @@ func (ir *IstioRouter) SetRoutes(
 						),
 						headerCanaryName: fmt.Sprintf("%s", randomSesId ),
 					}
+					fmt.Println(routeDest)
 				}
 				weightedRoute.Route[i] = routeDest
 			}
